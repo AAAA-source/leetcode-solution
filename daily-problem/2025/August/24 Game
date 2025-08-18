@@ -1,0 +1,100 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+Try all possible computation results to check if there is any result is 24 
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+Using backtracking to record the set of numbers. Every time we just need to try all number pairs and all the operation result.
+For every number pair a , b , the operation results are : 
+1. a + b 
+2. a - b 
+3. b - a 
+4. a * b 
+5. a / b 
+6. b / a 
+
+We should use "double" to record all the result. And write the result to the array , then recursive call function until there is only one number in array.  For example : [4 , 1 , 8 , 7] -> choose 8 , 4 and do type-2 operation , we will get [1 , 7 , 4] -> choose 1 , 7 and do type-3 operation , we will get [4 , 6] -> choose 4, t6 and do type-4 operation , we will get [24.0] 
+
+We should also consider the floating-point representation error , so we should use abs(number - 24.0) < error to check the number if it is 24.
+
+
+
+
+# Complexity
+- Time complexity: $O(1)$ for n = 4 
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+The easiest way to analyze all possible results is there are O(n!) kind of number permutation , and each have 6 kind of operations , so the possible outcomes will be O(6^n * n!)
+
+
+- Space complexity: O($n^2$) in stack
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+There are at most O(n) functions in stack , each function need O(n) space for vector.
+
+# Code
+```cpp []
+class Solution {
+public:
+    double error = 0.000001 ;
+    double targetnumber = 24.0 ;
+
+    double operation(int type , double a , double b) {
+        if (type == 0) 
+            return a + b ;
+        else if (type == 1)
+            return a - b ;
+        else if (type == 2)
+            return a * b ;
+        else if (type == 3)
+            return a / b ;
+        else if (type == 4)
+            return b - a ; 
+        else 
+            return b / a ;
+    }
+
+    bool checkresult( vector<double> &numbers ) {
+        // debug : print out numbers  
+        //for(auto &v : numbers)
+        //    cout << v << " " ;
+        //cout << endl ;
+
+        if (numbers.size() == 1) {
+            return abs(numbers[0] - targetnumber) <= error ;
+        }
+
+        int n = numbers.size() ;
+        for(int i = 0 ; i < n ; i++) {
+            for(int j = 0 ; j < i ; j++) {
+                for(int k = 0 ; k < 6 ; k++) {
+                    double newelement = operation(k , numbers[i] ,numbers[j]) ;
+
+                    vector<double> newarray ;
+                    for(int s = 0 ; s < n ; s++) {
+                        if (s != i && s != j)
+                            newarray.push_back(numbers[s]) ;
+                    }
+                    newarray.push_back(newelement) ;
+                    if ( checkresult(newarray) )
+                        return true ;
+
+                }
+            }
+        }
+        return false ;
+    } 
+
+
+    bool judgePoint24(vector<int>& cards) {
+        // try to bruteforce searching the answer 
+        // assume there are  numbers a , b , c ,d
+        // so we can random select two numbers to do arbitary operation
+        // select random tow numbers until there is only one number , and it is the result 
+        int n = cards.size() ;
+        vector<double> numbers(n) ;
+        for(int i = 0 ; i < n ;i++)
+            numbers[i] = (double) cards[i] ;
+        
+        return checkresult(numbers) ;
+    }
+};
+```
