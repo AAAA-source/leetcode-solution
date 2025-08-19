@@ -1,0 +1,56 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+When considering consecutive zeros in the array, each zero contributes to the formation of new subarrays.
+- A streak of length $k$ zeros can form $C^{k+1}_2 = \frac{k(k+1)}{2}$ subsarrays.
+- A streak of length $k-1$ zeros can form $C^{k}_2 = \frac{(k-1)k}{2}$ subsarrays.
+
+Therefore, when we extend the streak, going from length $k-1$ to $k$, the additional contribution is $\frac{k(k+1)}{2} - \frac{(k-1)k}{2} = k$. This also means that the $k^{th}$ zero in a streak adds exactly $k$ new subarrays ending at that position.
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+1. Initialize a counter `cnt` to keep track of the current streak of zeros.
+2. Iterate through `nums`:
+    - if the current number is zero, increment `cnt` by 1;
+    - if the current number is non-zero, reset `cnt`;
+    - add `cnt` to the running total result `res`.
+
+# Complexity
+- Time complexity: $$O(n)$$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $$O(1)$$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```c++ []
+class Solution {
+public:
+    long long zeroFilledSubarray(vector<int>& nums) {
+        long long res = 0;
+        long long cnt = 0;
+
+        for(int& num: nums){
+            if(num)
+                cnt = 0;
+            else
+                res += ++cnt;
+        }
+        return res;
+    }
+};
+```
+```python3 []
+class Solution:
+    def zeroFilledSubarray(self, nums: List[int]) -> int:
+        res = 0
+        cnt = 0
+
+        for num in nums:
+            if num:
+                cnt = 0
+            else:
+                cnt += 1
+                res += cnt
+        
+        return res
+```
