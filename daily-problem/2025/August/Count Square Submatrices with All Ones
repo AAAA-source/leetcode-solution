@@ -1,0 +1,49 @@
+## Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+"""
+problem associate with dp
+start from small case
+1, 1, 1
+1, 1, 0
+Suppose there is a dp that dp[i][j] is the ans then it should looks like
+1, 2, 3
+2, 5, 6
+doesn't seems having a relation
+
+Try with a dp that the sum of dp is the ans. 
+we need a dp where dp[i][j] means how many squares is matrix[i][j] contained in 
+1, 1, 1
+1, 2, 0
+-> sum of it is six 
+"""
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+"""
+define dp[i][j] as the side length of the largest square that has its bottom-right corner at (i, j).
+then dp[i][j] = k 
+contains the square from (m[i-(k-1)][j-(k-1)], dp[i][j]), (m[i-(k-2)][j-(k-2)], dp[i][j])...... k squares. Note that the the square we count will not overlap
+
+matrix[i][j]= 0 -> dp[i][j] = 0
+matrix[i][j]= 1 -> dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+"""
+
+# Complexity
+- Time complexity: O(mn)
+- Space complexity: O(mn)
+
+# Code
+class Solution:
+    def countSquares(self, matrix: List[List[int]]) -> int:
+        m, n = len(matrix), len(matrix[0])
+        dp = [[0]*n for _ in range(m)]
+        ans = 0
+        for i in range(m):
+            for j in range(n):
+                if matrix[i][j] == 1:
+                    if i == 0 or j == 0:
+                        dp[i][j] = 1
+                    else:
+                        dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+                    ans += dp[i][j]
+        return ans
