@@ -1,0 +1,75 @@
+Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+
+"""
+It’s hard to express the total number of all-ones submatrices with a direct global DP like dp[i][j] = answer.
+A more natural view: fix a bottom-right corner (i, j), expand upward row by row, and keep the minimum width seen so far.
+If we first convert each cell to “how many consecutive 1s extend to the left,” then for a fixed (i, j) we just walk upward and keep taking the minimum of these widths; summing those minima gives the number of all-ones submatrices that end at (i, j).
+"""
+
+Approach
+<!-- Describe your approach to solving the problem. -->
+
+"""
+
+Preprocess each cell as the number of consecutive 1s to its left (including itself).
+
+If mat[i][j] == 1, set mat[i][j] = mat[i][j-1] + 1 (or 1 if j == 0).
+
+Otherwise it’s 0.
+(We can overwrite mat in place to save space.)
+
+For each cell (i, j) treated as the bottom-right corner:
+
+If mat[i][j] > 0, set colLen = mat[i][j] and count = colLen (height = 1).
+
+Move upward from row i-1 to 0:
+
+If mat[k][j] == 0, stop (the column breaks).
+
+Otherwise set colLen = min(colLen, mat[k][j]), and add colLen to count.
+
+Add count to the global answer.
+
+The final sum is the total number of all-ones submatrices.
+"""
+
+Complexity
+
+Time complexity: O(M * N * min(M, N)) in the worst case (each cell may scan upward).
+
+Space complexity: O(1) extra (we reuse mat to store left-widths).
+
+Code
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int numSubmat(vector<vector<int>>& mat) {
+        int M = mat.size();
+        int N = mat[0].size();
+
+        long long ans = 0;
+        for (int row = 0; row < M; ++row) {
+            for (int col = 0; col < N; ++col) {
+                if (mat[row][col] == 1) {
+                    // Accumulate width from the left
+                    mat[row][col] = (col > 0 ? mat[row][col - 1] + 1 : 1);
+
+                    long long count = mat[row][col];
+                    int colLen = mat[row][col]; // Current width limit
+
+                    // Expand upward while keeping the minimum width
+                    for (int i = row - 1; i >= 0; --i) {
+                        if (mat[i][col] == 0) break;          // Can't go further up
+                        colLen = min(colLen, mat[i][col]);     // Update width limit
+                        count += colLen;                        // Add submatrices count
+                    }
+                    ans += count;
+                }
+            }
+        }
+        return static_cast<int>(ans);
+    }
+};
