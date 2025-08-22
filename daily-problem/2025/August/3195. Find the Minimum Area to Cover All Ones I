@@ -1,0 +1,76 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+traverse all elements , and record the bound of rectangle.
+# Approach
+<!-- Describe your approach to solving the problem. -->
+Using two loops to traverse all elements , when there is a '1' :
+1. update maxrow , minrow (top of rectangle, bottom of rectangle)
+2. update maxcolumn , mincolumn (left of rectangle , right of rectangle)
+
+# Complexity
+- Time complexity: $O(mn)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+We only traverse m * n grids one time.
+
+- Space complexity: $O(1)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+We only need constant space for variable
+
+# Code
+```cpp []
+class Solution {
+public:
+    int minimumArea(vector<vector<int>>& grid) {
+        int minrow = INT_MAX, maxrow = INT_MIN, 
+            mincolumn = INT_MAX, maxcolumn = INT_MIN ;
+        // traverse all elements and find the bound of rectangle 
+        for(int i = 0 ; i < grid.size() ; i++) {
+            for(int j = 0 ; j < grid[0].size() ; j++) {
+                if (grid[i][j] == 1) {
+                    // update the bounds
+                    minrow = min(minrow , i) ;
+                    maxrow = max(maxrow , i) ;
+                    mincolumn = min(mincolumn , j) ;
+                    maxcolumn = max(maxcolumn , j) ;
+                }
+            }
+        }
+        return (maxrow - minrow + 1) * (maxcolumn - mincolumn + 1) ;
+    }
+};
+```
+
+For optimization , we can observer that : 
+1. minrow will never change after we found the first '1'
+2. maxrow will change every time when we find a new '1' 
+
+Due to the observations , we can do some optimizations !
+
+# Code
+```cpp []
+class Solution {
+public:
+    int minimumArea(vector<vector<int>>& grid) {
+        int minrow = INT_MAX, maxrow = INT_MIN, 
+            mincolumn = INT_MAX, maxcolumn = INT_MIN ;
+        // traverse all elements and find the bound of rectangle 
+
+        // optimization : minrow won't change after we find the first '1' 
+        // maxrow will always change when we find new '1'
+        int appear = 0 ;
+        for(int i = 0 ; i < grid.size() ; i++) {
+            for(int j = 0 ; j < grid[0].size() ; j++) {
+                if (grid[i][j] == 1) {
+                    // update the bounds
+                    if (!appear)
+                        appear = 1 , minrow = i ;
+                    maxrow = i ;
+                    mincolumn = min(mincolumn , j) ;
+                    maxcolumn = max(maxcolumn , j) ;
+                }
+            }
+        }
+        return (maxrow - minrow + 1) * (maxcolumn - mincolumn + 1) ;
+    }
+};
+```
