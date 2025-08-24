@@ -1,0 +1,258 @@
+# **Intuition**
+We need to divide the grid into exactly 3 rectangles using 2 cuts. There are only 6 possible ways to make these cuts based on their direction and position.
+
+# **Approach**
+1. **Identify 6 cutting patterns**:
+   - Two horizontal cuts → 3 horizontal strips
+   - Two vertical cuts → 3 vertical strips  
+   - Horizontal + vertical cut in top half
+   - Horizontal + vertical cut in bottom half
+   - Vertical + horizontal cut in left half
+   - Vertical + horizontal cut in right half
+
+2. **Optimize with memoization**: Precompute boundaries for all subregions to avoid recalculating the minimum bounding rectangle for each subgrid.
+
+3. **Enumerate all possibilities**: For each cutting pattern, try all valid cut positions and calculate the total area needed to cover all 1's in the 3 resulting regions.
+
+# **Complexity**
+* Time complexity: O(m²n²) - We precompute boundaries for all submatrices once, then enumerate all cutting positions.
+* Space complexity: O(m²n²) - Memoization storage for boundary information of all subregions.
+
+# Code
+```python3 []
+class Solution:
+    def minimumSum(self, grid: List[List[int]]) -> int:
+        m, n = len(grid), len(grid[0])
+        bounds = {}
+        
+        def get_bounds(r1, c1, r2, c2):
+            # Get boundaries of 1's in subgrid [r1:r2+1, c1:c2+1]
+            if (r1, c1, r2, c2) in bounds:
+                return bounds[(r1, c1, r2, c2)]
+            
+            min_r, max_r = float('inf'), -1
+            min_c, max_c = float('inf'), -1
+            
+            for i in range(r1, r2 + 1):
+                for j in range(c1, c2 + 1):
+                    if grid[i][j] == 1:
+                        min_r = min(min_r, i)
+                        max_r = max(max_r, i)
+                        min_c = min(min_c, j)
+                        max_c = max(max_c, j)
+            
+            bounds[(r1, c1, r2, c2)] = (min_r, max_r, min_c, max_c)
+            return bounds[(r1, c1, r2, c2)]
+        
+        def get_area(r1, c1, r2, c2):
+            # Get minimum area rectangle covering all 1's in subgrid
+            min_r, max_r, min_c, max_c = get_bounds(r1, c1, r2, c2)
+            if min_r == float('inf'):  # No 1's in this region
+                return 0
+            return (max_r - min_r + 1) * (max_c - min_c + 1)
+        
+        result = float('inf')
+        
+        # Type 1: Two horizontal cuts (3 horizontal strips)
+        for r1 in range(m - 2):
+            for r2 in range(r1 + 1, m - 1):
+                area = (get_area(0, 0, r1, n - 1) + 
+                       get_area(r1 + 1, 0, r2, n - 1) + 
+                       get_area(r2 + 1, 0, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 2: Two vertical cuts (3 vertical strips)
+        for c1 in range(n - 2):
+            for c2 in range(c1 + 1, n - 1):
+                area = (get_area(0, 0, m - 1, c1) + 
+                       get_area(0, c1 + 1, m - 1, c2) + 
+                       get_area(0, c2 + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 3: One horizontal cut, then vertical cut on top part
+        for r in range(m - 1):
+            for c in range(n - 1):
+                area = (get_area(0, 0, r, c) + 
+                       get_area(0, c + 1, r, n - 1) + 
+                       get_area(r + 1, 0, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 4: One horizontal cut, then vertical cut on bottom part
+        for r in range(m - 1):
+            for c in range(n - 1):
+                area = (get_area(0, 0, r, n - 1) + 
+                       get_area(r + 1, 0, m - 1, c) + 
+                       get_area(r + 1, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 5: One vertical cut, then horizontal cut on left part
+        for c in range(n - 1):
+            for r in range(m - 1):
+                area = (get_area(0, 0, r, c) + 
+                       get_area(r + 1, 0, m - 1, c) + 
+                       get_area(0, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 6: One vertical cut, then horizontal cut on right part
+        for c in range(n - 1):
+            for r in range(m - 1):
+                area = (get_area(0, 0, m - 1, c) + 
+                       get_area(0, c + 1, r, n - 1) + 
+                       get_area(r + 1, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        return result
+```
+
+
+
+# 中文題解 LeetCode 3197: Find the Minimum Area to Cover All Ones II
+
+## 問題理解
+我們需要將網格**恰好**分成3個矩形區域，每個區域都必須包含至少一個1，並且要使覆蓋所有1的總面積最小。
+
+## 寫在最前面
+官方解答用了**旋轉矩陣**的技巧來減少代碼重複，可讀性比較低但寫起來比較漂亮簡潔。
+我的做法基本上就是拆分了**6種切割方式**，所以不用去看懂旋轉矩陣的概念，並且對記憶體做了一些優化。
+
+## 解題思路
+
+### 核心概念
+由於要分成恰好3個矩形，我們需要用2條切線來分割網格。根據切線的方向和位置，總共有6種切割方式：
+
+1. **兩條水平切線** → 3個水平條  
+2. **兩條垂直切線** → 3個垂直條  
+3. **一條水平切線 + 上半部分垂直切線** 
+4. **一條水平切線 + 下半部分垂直切線** 
+5. **一條垂直切線 + 左半部分水平切線**  
+6. **一條垂直切線 + 右半部分水平切線**
+
+### 六種切割示意圖
+
+```
+1) 兩條水平切線        2) 兩條垂直切線
+┌────┐                ┌─┬─┬─┐
+├────┤                │ │ │ │
+├────┤                └─┴─┴─┘
+└────┘
+
+3) 水平 + 上部垂直      4) 水平 + 下部垂直
+┌─┬─┐                 ┌───┐
+│ │ │                 │   │
+├─┴─┤                 ├─┬─┤
+│   │                 │ │ │
+└───┘                 └─┴─┘
+
+5) 垂直 + 左部水平      6) 垂直 + 右部水平
+┌───┬───┐             ┌───┬───┐
+│   │   │             │   │   │
+├───┤   │             │   ├───┤
+│   │   │             │   │   │
+└───┴───┘             └───┴───┘
+```
+
+### 算法步驟
+
+#### 1. 預計算邊界資訊
+找到子網格中所有1的最小包圍矩形，使用記憶化避免重複計算，時間複雜度從 O(m³n³) → O(m²n²)。
+
+#### 2. 計算子區域面積
+如果子區域沒有1，面積為0；否則返回最小包圍矩形的面積。
+
+#### 3. 枚舉所有切割方案
+對每種切割方式，枚舉所有可能的切線位置：  
+- 水平切線：可以在第0行到第m-2行之後切  
+- 垂直切線：可以在第0列到第n-2列之後切  
+
+### 時間複雜度分析
+- **預計算邊界**: O(m²n²) - 每個子矩形計算一次  
+- **枚舉切割方案**: O(m²n²) - 6種方式，每種最多m×n種切法  
+- **總時間複雜度**: O(m²n²)  
+- **空間複雜度**: O(m²n²) - 儲存邊界資訊  
+
+## My Python3 Solution
+
+```python
+class Solution:
+    def minimumSum(self, grid: List[List[int]]) -> int:
+        m, n = len(grid), len(grid[0])
+        bounds = {}
+        
+        def get_bounds(r1, c1, r2, c2):
+            """Get boundaries of 1's in subgrid [r1:r2+1, c1:c2+1]"""
+            if (r1, c1, r2, c2) in bounds:
+                return bounds[(r1, c1, r2, c2)]
+            
+            min_r, max_r = float('inf'), -1
+            min_c, max_c = float('inf'), -1
+            
+            for i in range(r1, r2 + 1):
+                for j in range(c1, c2 + 1):
+                    if grid[i][j] == 1:
+                        min_r = min(min_r, i)
+                        max_r = max(max_r, i)
+                        min_c = min(min_c, j)
+                        max_c = max(max_c, j)
+            
+            bounds[(r1, c1, r2, c2)] = (min_r, max_r, min_c, max_c)
+            return bounds[(r1, c1, r2, c2)]
+        
+        def get_area(r1, c1, r2, c2):
+            """Get minimum area rectangle covering all 1's in subgrid"""
+            min_r, max_r, min_c, max_c = get_bounds(r1, c1, r2, c2)
+            if min_r == float('inf'):  # No 1's in this region
+                return 0
+            return (max_r - min_r + 1) * (max_c - min_c + 1)
+        
+        result = float('inf')
+        
+        # Type 1: Two horizontal cuts (3 horizontal strips)
+        for r1 in range(m - 2):
+            for r2 in range(r1 + 1, m - 1):
+                area = (get_area(0, 0, r1, n - 1) + 
+                       get_area(r1 + 1, 0, r2, n - 1) + 
+                       get_area(r2 + 1, 0, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 2: Two vertical cuts (3 vertical strips)
+        for c1 in range(n - 2):
+            for c2 in range(c1 + 1, n - 1):
+                area = (get_area(0, 0, m - 1, c1) + 
+                       get_area(0, c1 + 1, m - 1, c2) + 
+                       get_area(0, c2 + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 3: One horizontal cut, then vertical cut on top part
+        for r in range(m - 1):
+            for c in range(n - 1):
+                area = (get_area(0, 0, r, c) + 
+                       get_area(0, c + 1, r, n - 1) + 
+                       get_area(r + 1, 0, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 4: One horizontal cut, then vertical cut on bottom part
+        for r in range(m - 1):
+            for c in range(n - 1):
+                area = (get_area(0, 0, r, n - 1) + 
+                       get_area(r + 1, 0, m - 1, c) + 
+                       get_area(r + 1, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 5: One vertical cut, then horizontal cut on left part
+        for c in range(n - 1):
+            for r in range(m - 1):
+                area = (get_area(0, 0, r, c) + 
+                       get_area(r + 1, 0, m - 1, c) + 
+                       get_area(0, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        # Type 6: One vertical cut, then horizontal cut on right part
+        for c in range(n - 1):
+            for r in range(m - 1):
+                area = (get_area(0, 0, m - 1, c) + 
+                       get_area(0, c + 1, r, n - 1) + 
+                       get_area(r + 1, c + 1, m - 1, n - 1))
+                result = min(result, area)
+        
+        return result
+```
