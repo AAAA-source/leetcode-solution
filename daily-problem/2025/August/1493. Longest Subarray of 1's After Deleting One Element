@@ -1,0 +1,48 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+We just need to compute the consecutive zeros on left and on right. Because we can delete one zero , so we can record the maximum value of consecutive zero on left + consecutive zero on right.
+
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+We use two arrays record consecutive zeros on left and right (exclude i-th element). After that , we just find the maximum value of summation.
+
+For the case that all elements is 1 , at i = 0 , leftzero[0] will be n - 1 , and it will be the answer.
+
+# Complexity
+- Time complexity: $O(n)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+We need O(n) time to build array and find maximum value.
+
+- Space complexity: $O(n)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+We need O(n) space for arrays 
+
+# Code
+```cpp []
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums) {
+        int n = nums.size() ;
+        vector<int> leftzero(n) , rightzero(n) ;
+
+        for(int i = 1 ; i < n ; i++) {
+            leftzero[i] = (nums[i - 1] == 1)? leftzero[i - 1] + 1 : 0 ;
+            //printf("%d " , leftzero[i]) ;
+        }
+        //printf("\n");
+        for(int i = n - 2 ; i >= 0 ; i--) {
+            rightzero[i] = (nums[i + 1] == 1)? rightzero[i + 1] + 1 : 0 ;
+            //printf("%d " , rightzero[i]) ;
+        }
+        //printf("\n") ;
+
+        int ans = 0 ;
+        for(int i = 0 ; i < n ; i++) {
+            ans = max(ans , leftzero[i] + rightzero[i]);
+        }
+
+        return ans ;
+    }
+};
+```
