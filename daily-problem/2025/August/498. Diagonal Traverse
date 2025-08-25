@@ -1,0 +1,79 @@
+# Approach 1
+<!-- Describe your approach to solving the problem. -->
+Each diagonal in the matrix can be uniquely identified by the sum of its row and column indices $k = r + c$. For example, elements at $(0,2)$, $(1,1)$, $(2,0)$ all belong to the same diagonal since $r + c = 2$.
+
+We can iterate over each diagonal from $k=0$ to $k=m + n - 2$, collect elements and then reverse the order depending on whether $k$ is even or odd.
+
+# Complexity
+- Time complexity: 
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+Each element is visited exactly once, so the complexity is $O(m\times n)$, where $m$ and $n$ are the matrix dimensions.
+
+- Space complexity:
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+The space is for storing the result list, which has size $O(m × n)$. Apart from that, we use a temporary diagonal array of size $≤ min(m, n)$, so auxiliary space is $O(min(m, n))$.
+
+# Code
+```python3 []
+class Solution:
+    def findDiagonalOrder(self, mat: List[List[int]]) -> List[int]:
+        m, n = len(mat), len(mat[0])
+        res = []
+
+        # k = r + c
+        for k in range(m + n - 1):
+            # 0 <= r < m
+            # 0 <= k-r < n
+            lowerbound = max(0, k - n + 1)
+            upperbound = min(m, k + 1)
+            arr = [mat[r][k-r] for r in range(lowerbound, upperbound)]
+            res += arr if k % 2 else arr[::-1]
+
+        return res
+```
+
+---
+
+# Approach 2
+<!-- Describe your approach to solving the problem. -->
+Instead of grouping diagonals, we can simulate the movement directly. Starting from $(0,0)$, we move diagonally up-right when $r+c$ is even, and diagonally down-left when $r+c$ is odd.
+
+At each step, we add the current element to the result and calculate the next position. If moving diagonally goes out of bounds, we adjust by moving either right or down depending on the current position on the matrix border. This continues until we collect all $m × n$ elements.
+
+
+# Complexity
+- Time complexity:
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+Each element is processed once, so the complexity is $O(m\times n)$.
+
+- Space complexity:
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+The result list requires $O(m\times n)$ space, and only a few variables are used for traversal, so auxiliary space is $O(1)$.
+
+# Code
+```python3 []
+class Solution:
+    def findDiagonalOrder(self, mat: List[List[int]]) -> List[int]:
+        m, n = len(mat), len(mat[0])
+        res = []
+
+        r, c = 0, 0
+        for _ in range(m * n):
+            res.append(mat[r][c])
+            dr, dc = (1, -1) if (r + c) % 2 else (-1, 1)
+            
+            if 0 <= r + dr < m and 0 <= c + dc < n:
+                r += dr
+                c += dc
+                continue
+            
+            # moving out of bounds
+            # up-right
+            if c == n-1:    r += 1
+            elif r == 0:    c += 1
+            # down-left
+            elif r == m-1:  c += 1
+            elif c == 0:    r += 1
+            
+        return res
+```
