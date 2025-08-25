@@ -1,0 +1,66 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+The challenge is to decide when to use teleportation optimally, since we only get at most $k$ teleports. This suggests a dynamic programming approach where we track both the position in the grid and how many teleports have been used.
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+We use a 3D DP array: $dp[t][i][j] :=$ minimum cost to reach cell $(i, j)$ using at most $t$ teleports.
+
+Steps:
+1. Initialization: Set starting position $dp[0][0][0] = 0$
+2. Normal movement: At teleport count $t=0$, fill $dp[0]$ by moving right/down normally, accumulating grid costs.
+3. Teleportation:
+    - For each $t$ from $1$ to $k$, we allow one more teleport.
+    - Sort all cells by their grid value (descending).
+    - Track the best cost best of reaching a cell with that value at teleport count $t-1$.
+    - After teleportation updates, again allow right/down moves for $dp[t]$.
+4. The minimum cost to reach $(m-1, n-1)$ with at most $k$ teleports is $dp[k][i][j]$
+
+
+
+# Complexity
+- Time complexity:
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+Sorting $O(mn\times log(mn))$ + Teleports $O(kmn)$ + Normal moves $O(kmn)$ = $O(kmn + mn\times log(mn))$
+
+- Space complexity:
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+We store a DP table of size $=(k+1) × m × n$, so $O(kmn)$.
+
+# Code
+```python3 []
+class Solution:
+    def minCost(self, grid: List[List[int]], k: int) -> int:
+        m, n = len(grid), len(grid[0])
+
+        dp = [[[inf] * n for _ in range(m)] for _ in range(k+1)]
+        dp[0][0][0] = 0
+
+        # normal moves without teleport
+        for i in range(m):
+            for j in range(n):
+                if i: dp[0][i][j] = min(dp[0][i][j], dp[0][i-1][j] + grid[i][j])
+                if j: dp[0][i][j] = min(dp[0][i][j], dp[0][i][j-1] + grid[i][j])
+        
+        # cells sorted by value in descending
+        arr = sorted([(grid[i][j], i, j) for i in range(m) for j in range(n)], reverse=True)
+        
+        # process teleport levels
+        for t in range(1, k+1):
+            best = inf
+            mp = {}
+            
+            # iterate to find best cost for each value
+            for _, i, j in arr:
+                best = min(best, dp[t-1][i][j])
+                mp[grid[i][j]] = best
+
+            # update dp[t] with teleports + normal moves
+            for i in range(m):
+                for j in range(n):
+                    dp[t][i][j] = mp[grid[i][j]]
+                    if i: dp[t][i][j] = min(dp[t][i][j], dp[t][i-1][j] + grid[i][j])
+                    if j: dp[t][i][j] = min(dp[t][i][j], dp[t][i][j-1] + grid[i][j])
+
+        return dp[k][m-1][n-1]
+```
