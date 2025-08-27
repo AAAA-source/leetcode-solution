@@ -1,43 +1,45 @@
-2825. Partition Array Into K-Distinct Groups
-Intuition
+# 2825. Partition Array Into K-Distinct Groups  
 
-We want to partition all elements of the array into groups, where each group contains exactly k distinct elements.
-This implies:
+# **Intuition**  
+We need to partition all elements of `nums` into groups, each containing exactly `k` **distinct** elements.  
 
-The total number of elements n must be divisible by k (otherwise cannot form groups of equal size).
+This leads to three necessary conditions:  
+1. The total number of elements `n` must be divisible by `k`.  
+2. Each element can appear in at most `n / k` groups.  
+3. The number of distinct elements must be at least `k`.  
 
-Let num_group = n / k. Each element can appear in at most num_group groups, since every group can contain that element at most once.
+If all three conditions are satisfied, partitioning is possible.  
 
-The number of distinct elements must be at least k, otherwise we cannot even form one valid group.
+---
 
-If all these conditions are satisfied, partitioning is possible.
+# **Approach**  
+1. **Check divisibility**  
+   * If `n % k != 0`, return `false`.  
 
-Approach
+2. **Count frequency**  
+   * Use `unordered_map` to store how many times each element appears.  
 
-Check divisibility: If n % k != 0, immediately return false.
+3. **Validate constraints**  
+   * If any frequency > `n / k`, return `false`.  
+   * If distinct count < `k`, return `false`.  
 
-Count frequency: Use a hash map (unordered_map) to store counts of each number.
+4. **Return result**  
+   * Otherwise, return `true`.  
 
-Validate frequency: If any count exceeds num_group, return false.
+---
 
-Check distinct count: If the number of unique elements is less than k, return false.
+# **Complexity**  
+* Time complexity: **O(n)**  
+  * Building frequency map  
+  * Checking constraints  
 
-If all checks pass, return true.
+* Space complexity: **O(n)**  
+  * Hash map storage in worst case  
 
-Complexity
 
-Time Complexity:
+# **Code (C++)**  
 
-Building frequency map: O(n)
-
-Checking constraints: O(n)
-Total: O(n)
-
-Space Complexity:
-
-Frequency map storage: O(n) in worst case (all distinct).
-
-Code
+```cpp
 class Solution {
 public:
     bool partitionArray(vector<int>& nums, int k) {
@@ -54,14 +56,14 @@ public:
             freq[x]++;
         }
 
-        // Condition 2: check frequency limit
+        // Condition 2: check frequency constraint
         for (auto &p : freq) {
             if (p.second > num_group) {
                 return false;
             }
         }
 
-        // Condition 3: need at least k distinct numbers
+        // Condition 3: must have at least k distinct numbers
         if ((int)freq.size() < k) return false;
 
         return true;
