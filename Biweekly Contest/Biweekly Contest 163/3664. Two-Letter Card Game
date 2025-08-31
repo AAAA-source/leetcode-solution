@@ -1,0 +1,78 @@
+# Intuition
+We only need to focus on cards that contain the special letter `x`.  
+Depending on the position of `x`, cards fall into three categories:  
+- `"x c"`: `x` on the left, some other letter on the right.  
+- `"c x"`: some other letter on the left, `x` on the right.  
+- `"x x"`: both positions are `x`.  
+
+Cards without `x` are irrelevant.  
+Within each category, pairs can be formed under simple rules, and `"x x"` cards can act as wildcards to pair with any single-`x` card.
+
+---
+
+# Approach
+1. Count the occurrences of `"x c"`, `"c x"`, and `"x x"`.  
+2. For `"x c"` cards, two cards can form a pair if their right letters differ. Similarly, for `"c x"` cards, their left letters must differ.  
+   - The maximum number of such internal pairs is given by:
+     \[
+     \min\Big(\lfloor \tfrac{T}{2} \rfloor,\; T - \max\_c \text{count}[c]\Big)
+     \]
+     where \(T\) is the total count in the group.  
+3. Count how many single-`x` cards remain unpaired. Use `"x x"` cards to pair with these first.  
+4. If `"x x"` cards are still left, they can even replace existing internal pairs: 2 `"x x"` cards plus 2 single-`x` cards can yield 2 points instead of 1, for a net gain of +1.
+
+---
+
+# Complexity
+- **Time complexity:** \(O(n)\), since we scan the cards once and use frequency counts.  
+- **Space complexity:** \(O(1)\), as we only need counters for up to 26 letters.
+
+---
+
+# Code
+```python3 []
+from collections import Counter
+from typing import List
+
+class Solution:
+    def score(self, cards: List[str], x: str) -> int:
+        L = Counter()  # "x c"
+        R = Counter()  # "c x"
+        XX = 0
+
+        for s in cards:
+            a, b = s[0], s[1]
+            if a == x and b == x:
+                XX += 1
+            elif a == x and b != x:
+                L[b] += 1
+            elif a != x and b == x:
+                R[a] += 1
+            # else: no x at all -> unusable
+
+        def intra_pairs(cnt: Counter) -> int:
+            T = sum(cnt.values())
+            if T <= 1: 
+                return 0
+            mx = max(cnt.values(), default=0)
+            return min(T // 2, T - mx)
+
+        IL = intra_pairs(L)
+        IR = intra_pairs(R)
+        base = IL + IR
+
+        TL = sum(L.values())
+        TR = sum(R.values())
+        TS = TL + TR
+
+        # still single after using internal pairs
+        U = TS - 2 * base
+
+        use1 = min(XX, U)              # pair XX with currently single cards
+        rem = XX - use1
+        # break internal pairs: 2 XX -> +1 net
+        add2 = min(base, rem // 2)
+
+        return base + use1 + add2
+        
+```
