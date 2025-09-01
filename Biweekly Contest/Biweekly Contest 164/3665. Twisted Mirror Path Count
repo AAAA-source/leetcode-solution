@@ -1,0 +1,39 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+We use DP to count the number of ways to reach each cell.  
+- Starting from the top-left, for each reachable cell $(i, j)$, we simulate moves in two directions: right $(0, 1)$ and down $(1, 0)$.  
+- At each step, we walk along open cells in the grid, turning when possible, until hitting either a boundary or an obstacle.  
+- Once the walk ends, we add the number of ways from the starting cell into the destination cell.  
+- Finally, the DP value at the bottom-right cell gives the total number of unique paths.
+
+# Complexity
+- Time complexity: $O(mn(m+n))$ in the worst case, since each `move` may traverse across a row/column for every cell.
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(mn)$ for the DP grid. 
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def uniquePaths(self, grid: List[List[int]]) -> int:
+        MOD = 10 ** 9 + 7
+        m, n = len(grid), len(grid[0])
+        dp = [[0] * n for _ in range(m)]
+        dp[0][0] = 1
+
+        def move(i, j, di, dj, val):
+            while 0 <= i+di < m and 0 <= j+dj < n and grid[i+di][j+dj]:
+                i, j = i+di, j+dj
+                di, dj = dj, di
+            if 0 <= i+di < m and 0 <= j+dj < n:
+                dp[i+di][j+dj] = (dp[i+di][j+dj] + val) % MOD
+
+        for i in range(m):
+            for j in range(n):
+                if not dp[i][j]: continue
+                move(i, j, 0, 1, dp[i][j])
+                move(i, j, 1, 0, dp[i][j])
+
+        return dp[m-1][n-1]
+```
