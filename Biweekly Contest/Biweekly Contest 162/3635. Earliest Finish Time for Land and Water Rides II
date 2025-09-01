@@ -1,0 +1,52 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+If the first ride finishes at time `t`, the best finish time for the second category is  
+$$F(t)=\min_j\big(\max(t,\text{start}_j)+\text{duration}_j\big)$$.
+
+Each term is non-decreasing in`t`, so`F(t)` is also non-decreasing. Therefore we should finish the first category as early as possible.
+# Approach
+<!-- Describe your approach to solving the problem. -->
+1. **Earliest first finish.**  
+   For the chosen first category (`first_start`, `first_dur`), compute
+   $t_\text{first}=\min_i(\text{first\_start}[i]+\text{first\_dur}[i])$.
+   This is the earliest possible time we can start the second category.
+
+2. **Evaluate second category at that arrival time.**  
+   Scan all rides in the second category (`sec_start`, `sec_dur`) and take
+   $\min_j\big(\max(t_\text{first},\ \text{sec\_start}[j])+\text{sec\_dur}[j]\big)$.
+   This directly implements the definition of $F(t)$ at $t=t_\text{first}$.
+
+3. **Try both orders.**  
+   Run steps (1)–(2) for land first and for water first, then return the smaller finish time.
+# Complexity
+- Time complexity:$$O(n + m)$$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+
+- Space complexity:$$O(1)$$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```cpp []
+class Solution {
+public:
+    int get_min_time(vector<int>& first_start, vector<int>& first_dur, vector<int>& sec_start, vector<int>&sec_dur) {
+        int min_first = INT_MAX, n1 = first_start.size();
+        for(int i = 0; i < n1; ++i){
+            min_first = min(min_first, first_start[i] + first_dur[i]);
+        }
+
+        int min_sec = INT_MAX, n2 = sec_start.size();
+        for(int i = 0; i < n2; ++i){
+            min_sec = min(min_sec, max(min_first, sec_start[i]) + sec_dur[i]);
+        }
+
+        return min_sec;
+    }
+    int earliestFinishTime(vector<int>& landStartTime, vector<int>& landDuration, vector<int>& waterStartTime, vector<int>& waterDuration) {
+        int land_first = get_min_time(landStartTime, landDuration, waterStartTime, waterDuration);
+        int water_first = get_min_time(waterStartTime, waterDuration, landStartTime, landDuration);
+        return min(land_first, water_first);  
+    }
+};
+```
