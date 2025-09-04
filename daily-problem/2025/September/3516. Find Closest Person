@@ -1,0 +1,29 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+check abs(z-x), abs(z-y)
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+check abs(z-x), abs(z-y)
+
+# Complexity
+- Time complexity: O(1)
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: O(1)
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def findClosest(self, x: int, y: int, z: int) -> int:
+        x = abs(z-x)
+        y = abs(z-y)
+
+        if x > y:
+            return 2
+        elif y > x:
+            return 1
+        else:
+            return 0
+```
