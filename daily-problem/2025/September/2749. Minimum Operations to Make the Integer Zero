@@ -1,0 +1,27 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+After $k$ operations, the remainder is $num1 - k * num2$. This must be expressible as the sum of exactly $k$ powers of two, which requires bit_count(remainder) ≤ $k$ ≤ remainder.
+
+We check $k = 1..60$ and return the first valid $k$, else $-1$.
+
+# Complexity
+- Time complexity: O(1)
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: O(1)
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def makeTheIntegerZero(self, num1: int, num2: int) -> int:        
+        k = 1
+        while num1 and k <= 60:
+            num1 -= num2
+            if num1.bit_count() <= k <= num1:
+                return k
+            
+            k += 1
+
+        return -1
+```
