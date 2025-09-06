@@ -1,0 +1,164 @@
+# Intuition
+The problem asks us to answer multiple range queries where, for each query, we must find the majority element in a subarray that appears at least a given threshold number of times. A naive approach of scanning each subarray for every query would be too slow. To optimize, we can use Mo’s algorithm (query square root decomposition) so that overlapping queries reuse work, and maintain a frequency counter that can quickly update when elements are added or removed.
+
+# Approach
+We divide the array into blocks of size roughly √(number of queries). Queries whose length is smaller than the block size are answered directly by recomputing frequencies. For longer queries, we sort them according to Mo’s ordering (first by block, then by right endpoint) so that we can efficiently move the left and right boundaries while reusing the frequency state.
+
+A helper class Counter maintains:
+
+A frequency map of numbers.
+
+The current maximum frequency.
+
+The smallest number achieving that frequency (to break ties).
+
+When processing queries:
+
+If the query range length is small, recompute directly.
+
+Otherwise, move the right pointer forward while updating the counter.
+
+Temporarily add left elements (up to block boundary) to evaluate the answer, then remove them to restore the state.
+
+Store the answer if the maximum frequency meets the threshold.
+
+This way, each element is added/removed only O(√q) times across all queries.
+
+# Complexity
+- Time complexity:
+O((n+q)⋅q​)
+
+- Space complexity:
+O(n+q)
+
+# Code
+```cpp []
+class Solution {
+ private:
+  class Counter {
+   private:
+    using answer_t = array<int, 2>;
+
+   public:
+    Counter() : num_to_count_{}, max_count_{}, val_{} {
+    }
+
+    void add(const int num) {
+      const int count = ++num_to_count_[num];
+      if (count > max_count_) {
+        max_count_ = count;
+        val_ = num;
+      } else if (count == max_count_) {
+        val_ = min(val_, num);
+      }
+    }
+
+    void remove(const int num) {
+      auto itr = num_to_count_.find(num);
+      if (--itr->second == 0) {
+        num_to_count_.erase(itr);
+      }
+    }
+
+    answer_t answer() const {
+      return answer_t{max_count_, val_};
+    }
+
+    void reset() {
+      num_to_count_.clear();
+      max_count_ = 0;
+      val_ = 0;
+    }
+
+    void set(const int max_count, const int val) {
+      max_count_ = max_count;
+      val_ = val;
+    }
+
+   private:
+    unordered_map<int, int> num_to_count_;
+    int max_count_;
+    int val_;
+  };
+
+ public:
+  vector<int> subarrayMajority(const vector<int> &nums, const vector<vector<int>> &queries) {
+    /**
+     * <0>: the block index
+     * <1>: the left bound of a query
+     * <2>: the right bound of a query
+     * <3>: the threshold of a query
+     * <4>: the query index
+     */
+    using mo_q_node_t = array<int, 5>;
+    constexpr int l_i = 0;
+    constexpr int r_i = 1;
+    constexpr int threshold_i = 2;
+
+    const int n = static_cast<int>(nums.size());
+    const int n_queries = static_cast<int>(queries.size());
+
+    vector<int> ret(n_queries, -1);
+    const int block_size = (n - 1) / static_cast<int>(sqrt(n_queries)) + 1;
+
+    Counter counter;
+    vector<mo_q_node_t> mo_q;
+    for (int i = 0; i < n_queries; ++i) {
+      const int left = queries[i][l_i];
+      const int right = queries[i][r_i] + 1;
+      const int threshold = queries[i][threshold_i];
+      if (right - left > block_size) {
+        mo_q.emplace_back(mo_q_node_t{left / block_size, left, right, threshold, i});
+        continue;
+      }
+
+      counter.reset();
+      for (int j = left; j < right; ++j) {
+        counter.add(nums[j]);
+      }
+      const auto [count, val] = counter.answer();
+      if (count >= threshold) {
+        ret[i] = val;
+      }
+    }
+
+    sort(mo_q.begin(),
+         mo_q.end(),
+         [](const mo_q_node_t &lhs, const mo_q_node_t &rhs) -> bool {
+      const auto [l_bi, l_, l_r, l__, l___] = lhs;
+      const auto [r_bi, r_, r_r, r__, r___] = rhs;
+      return l_bi < r_bi || (l_bi == r_bi && l_r < r_r);
+    });
+
+    const int n_mo_q = static_cast<int>(mo_q.size());
+    for (int r = 0, i = 0; i < n_mo_q; ++i) {
+      const auto [bi, left, right, threshold, qi] = mo_q[i];
+      const int l0 = (bi + 1) * block_size;
+      if (i == 0 || bi > mo_q[i - 1].front()) {
+        // reach a new block, so reset the counter
+        counter.reset();
+        r = l0;
+      }
+
+      for (; r < right; ++r) {
+        counter.add(nums[r]);
+      }
+
+      const auto [original_count, original_val] = counter.answer();
+      for (int j = left; j < l0; ++j) {
+        counter.add(nums[j]);
+      }
+      const auto [count, val] = counter.answer();
+      if (count >= threshold) {
+        ret[qi] = val;
+      }
+
+      for (int j = left; j < l0; ++j) {
+        counter.remove(nums[j]);
+      }
+      counter.set(original_count, original_val);
+    }
+    return ret;
+  }
+};
+```
