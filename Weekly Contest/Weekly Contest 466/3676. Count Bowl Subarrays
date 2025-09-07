@@ -1,0 +1,55 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+We locate the maximum value in the array and simulate a monotonic decreasing stack scan on both sides of the peak:
+- Rightward scan: move from the peak toward the right. Whenever the current element is larger than the stack’s top, pop elements and increment the count.  
+- Leftward scan: same process, but scan in reverse.
+
+Each pop indicates a valid bowl-shaped subarray: the popped element lies at the bottom of the bowl, bounded by the peak on one side and the current larger element on the other.
+
+Example: `nums = [2, 5, 3, 1, 4]`
+- The peak is `5` at index `1`.  
+
+Right scan:
+- Compare `3` with `5`: no pop, stack = [5, 3].  
+- Compare `1` with `3`: no pop, stack = [5, 3, 1].  
+- Compare `4` with `1`: pop `1`, count = 1 (`[5, 1, 4]` is a bowl).  
+  Stack now = [5, 3].  
+- Compare `4` with `3`: pop `3`, count = 2 (`[5, 3, 4]` is a bowl).  
+  Stack now = [5, 4].  
+
+Left scan:
+- Compare `2` with `5`: no pop, stack = [5, 2].  
+
+Final count = **2**, corresponding to the bowls `[5, 1, 4]` and `[5, 3, 4]`. 
+
+# Complexity
+- Time complexity: $O(n)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(n)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def bowlSubarrays(self, nums: List[int]) -> int:
+        n = len(nums)
+        peak = nums.index(max(nums))
+        res = 0
+
+        st = [peak]
+        for i in range(peak+1, n):
+            while nums[st[-1]] < nums[i]:
+                st.pop()
+                res += 1
+            st.append(i)
+
+        st = [peak]
+        for i in range(peak-1, -1, -1):
+            while nums[st[-1]] < nums[i]:
+                st.pop()
+                res += 1
+            st.append(i)
+        
+        return res
+```
