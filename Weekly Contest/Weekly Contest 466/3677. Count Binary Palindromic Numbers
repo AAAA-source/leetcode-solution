@@ -1,0 +1,92 @@
+# Intuition
+Binary palindromes are completely determined by their left half: once the most significant half (including the middle bit when the length is odd) is fixed, the rest is its mirror.  
+So to count palindromes `≤ n`, we can:
+1. Count all palindromic binaries whose bit-length is **strictly less** than `bitlen(n)`.  
+2. Handle the **same-length** ones by comparing the mirrored number of `n`’s prefix with `n` itself.
+
+---
+
+# Approach
+1. **Handle small bases**:  
+   - `n = 0 → answer = 1` (`"0"`)  
+   - `n = 1 → answer = 2` (`"0"`, `"1"`)  
+
+2. **Closed-form for shorter lengths**:  
+   Let `L = bitlen(n)`. The number of binary palindromes with length `< L` is  
+   \[
+   \sum_{k=1}^{L-1} 2^{\lceil k/2 \rceil - 1}.
+   \]  
+   This is computed in **O(1)** via a parity-based formula (`total` in the code) and added to `ans` (which already includes `0`).  
+
+3. **Same-length as `n`**:  
+   - Let `m = ceil(L/2)` and `prefix_n = n >> (L - m)` be the highest `m` bits of `n`.  
+   - All valid prefixes in `[low_pref .. prefix_n-1]`, where `low_pref = 1 << (m-1)` (ensuring no leading zero), generate palindromes `≤ n`. Add their count: `max(0, prefix_n - low_pref)`.  
+   - Construct the palindrome from `prefix_n` by mirroring (`make_pal`) and add `1` if it is `≤ n`.
+
+4. **Helpers**:  
+   - `reverse_low_k_bits(x,k)`: reverses the lowest `k` bits of `x`.  
+   - `make_pal(prefix,L)`: builds a length-`L` palindrome from the highest `ceil(L/2)` bits by mirroring.
+
+---
+
+# Complexity
+- **Time complexity:** \(O(\log n)\).  
+  We do O(1) work per bit-length and a few constant-time bit operations; `bitlen(n) ≤ 50` for `n ≤ 1e15`.  
+- **Space complexity:** \(O(1)\).  
+  Only a few integers and masks are used.
+
+---
+# Code
+```python3 []
+class Solution:
+    def countBinaryPalindromes(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        if n == 1:
+            return 2
+
+        def reverse_low_k_bits(x: int, k: int) -> int:
+            # reverse exactly k bits of x (lowest k bits)
+            res = 0
+            for _ in range(k):
+                res = (res << 1) | (x & 1)
+                x >>= 1
+            return res
+
+        def make_pal(prefix: int, L: int) -> int:
+            # build a length-L binary palindrome using prefix (highest ceil(L/2) bits)
+            if L % 2 == 0:
+                m = L // 2
+                return (prefix << m) | reverse_low_k_bits(prefix, m)
+            else:
+                m = (L + 1) // 2
+                return (prefix << (m - 1)) | reverse_low_k_bits(prefix >> 1, m - 1)
+
+        # count 0 at first
+        ans = 1
+        L = n.bit_length()
+        
+        if (L - 1) % 2 == 0:
+            total = (1 << (((L - 1) // 2) + 1)) - 2
+        else:
+            total = (1 << ((L // 2)) + 1) - (1 << ((L // 2) - 1)) - 2
+        ans += total
+
+        # same length as n
+        m = (L + 1) // 2
+        prefix_n = n >> (L - m)
+        low_pref = 1 << (m - 1)
+
+        # prefixes strictly less than prefix_n
+        if prefix_n > low_pref:
+            ans += prefix_n - low_pref
+
+        # check prefix == prefix_n
+        pal = make_pal(prefix_n, L)
+        if pal <= n:
+            ans += 1
+
+        return ans
+
+```
