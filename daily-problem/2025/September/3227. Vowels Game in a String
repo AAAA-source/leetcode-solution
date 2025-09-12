@@ -1,0 +1,25 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+We can reason about the outcome by considering different situations:
+1. No vowels → Bob wins.
+2. Odd number of vowels: Alice removes the entire `s` and wins.
+3. Even number of vowels: Alice first removes a subarray containing one vowel. This leaves an odd number of vowels for her next turn, which again guarantees her win.
+
+Thus, Alice wins if and only if `s` contains at least one vowel.
+
+# Complexity
+- Time complexity: $O(n)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(1)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def doesAliceWin(self, s: str) -> bool:
+        for c in s:
+            if c in 'aeiou':
+                return True
+        return False
+```
