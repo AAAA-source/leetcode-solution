@@ -1,0 +1,63 @@
+# Intuition
+We are asked to rearrange the string so that all consonants remain fixed in place, and only the vowels are sorted in non-decreasing ASCII order.  
+This means the problem essentially reduces to:  
+1. Identify vowels in the string.  
+2. Sort them by ASCII value.  
+3. Put them back into their original positions, leaving consonants unchanged.  
+
+Since the set of vowels is fixed (`a, e, i, o, u` and their uppercase forms), this becomes a constrained sorting problem.
+
+---
+
+# Approach
+1. Predefine the ASCII order of vowels: `['A','E','I','O','U','a','e','i','o','u']`.  
+2. Count the frequency of each vowel using a small array of size 10.  
+3. Traverse the string again:  
+   - If the character is a consonant, keep it as is.  
+   - If it is a vowel, take the next available vowel from the frequency table (in ASCII order) and replace it.  
+4. Build the final string and return it.
+
+This avoids a full sort of all vowels (`O(m log m)`) and instead leverages counting sort (`O(m)` with a fixed alphabet size of 10).
+
+---
+
+# Complexity
+- **Time complexity:** \(O(n)\), where \(n\) is the length of the string.  
+  Each character is processed a constant number of times.  
+- **Space complexity:** \(O(1)\).  
+  We only use a fixed-size array of length 10 to count vowels, independent of input size.
+
+---
+
+# Code
+```python3 []
+class Solution:
+    def sortVowels(self, s: str) -> str:
+        order = ['A','E','I','O','U','a','e','i','o','u']
+        idx = {ch: i for i, ch in enumerate(order)}
+        V = set(order)
+
+        # Count frequencies of vowels
+        cnt = [0]*10
+        for ch in s:
+            if ch in V:
+                cnt[idx[ch]] += 1
+
+        # Generator to yield vowels in ASCII order
+        def next_vowel():
+            for i, ch in enumerate(order):
+                while cnt[i] > 0:
+                    cnt[i] -= 1
+                    yield ch
+
+        it = next_vowel()
+        arr = list(s)
+
+        # Fill vowels back in sorted order
+        for i, ch in enumerate(arr):
+            if ch in V:
+                arr[i] = next(it)
+
+        return "".join(arr)
+
+```
