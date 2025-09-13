@@ -1,0 +1,47 @@
+# Intuition 
+Finding the maximum of $XOR(X) \oplus XOR(Y) \equiv$ the maximum of $XOR(X)$.
+
+To solve this efficiently, we use a linear XOR basis, which is a minimal set of numbers such that:
+- Any XOR combination of the original numbers can be expressed as XOR of some subset of the basis.
+- The basis elements are linearly independent (no element can be formed as XOR of others).
+
+So if we have the basis, we know exactly what XOR values are possible.
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+Build the XOR basis:
+1. Iterate over each number in nums.
+2. Reduce it against the current basis by taking $x = min(x, x \oplus b)$ for each basis element $b$.
+3. If after reduction $x > 0$, insert it into the basis (it represents a new independent bit-pattern).
+4. Keep the basis sorted in descending order to maximize high bits first.
+
+Compute maximum XOR:
+1. Start from $res = 0$.
+2. Try to improve $res$ by XOR’ing it with each basis element $b$ if it increases the result.
+3. This ensures we greedily construct the maximum XOR possible.
+
+# Complexity
+- Time complexity: $O(n)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(1)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def maxXorSubsequences(self, nums: List[int]) -> int:
+        basis = []
+        for x in nums:
+            for b in basis:
+                x = min(x, x^b)
+            if x > 0:
+                basis.append(x)
+                basis.sort(reverse=True)
+        
+        res = 0
+        for b in basis:
+            res = max(res, res^b)
+
+        return res
+```
