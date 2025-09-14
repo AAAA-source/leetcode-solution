@@ -1,0 +1,60 @@
+Intuition
+The task is to find the most frequent consonant and the most frequent vowel in the given string, then return the sum of their frequencies.
+The intuition is straightforward:
+
+Count how many times each character appears.
+
+Identify the maximum frequency among consonants.
+
+Identify the maximum frequency among vowels.
+
+Add them together.
+
+Approach
+Use an unordered_map<char, int> to store the frequency of each character in the string.
+
+Iterate through all lowercase letters from a to z:
+
+If it is a consonant, update const_num (the maximum consonant frequency).
+
+If it is a vowel, update vowel_num (the maximum vowel frequency).
+
+Return const_num + vowel_num as the final result.
+
+Complexity
+Time complexity:
+Counting frequencies takes O(n), where n is the length of the string.
+Iterating over the 26 lowercase letters takes constant time O(26).
+
+Overall: O(n).
+
+Space complexity:
+The unordered_map stores frequencies of at most 26 characters, which is constant.
+Overall: O(1).
+
+Code
+class Solution {
+public:
+    int maxFreqSum(string s) {
+        int const_num = INT_MIN;
+        int vowel_num = INT_MIN;
+        unordered_map<char, int> map;
+        for(const char& c : s)
+            map[c]++;
+        for(int i=0;i<26;i++) {
+            char c = i+'a';
+            bool is_const = (c!='a' && c!='e' && c!='i' && c!='o' && c!='u');
+            if(map[c]>const_num && is_const)
+                const_num = map[c];
+        }
+            
+        
+        for(int i=0;i<26;i++) {
+            char c = i+'a';
+            bool is_vowel = (c=='a' || c=='e' || c=='i' || c=='o' || c=='u');
+            if(map[c]>vowel_num && is_vowel)
+                vowel_num = map[c];
+        }
+        return const_num+vowel_num;
+    }
+};
