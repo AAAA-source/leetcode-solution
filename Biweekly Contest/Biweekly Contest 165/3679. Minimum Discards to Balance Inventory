@@ -1,0 +1,48 @@
+Intuition
+We’re scanning through the array with a sliding window of size w.
+Inside any such window, no element should appear more than m times.
+If a new element breaks this rule, you “discard” it (mark as 0 and count it in ans).
+
+Approach
+Use two pointers (i and j) to maintain a window of size at most w.
+Use a hashmap (mp) to track how many times each number appears in the current window.
+As you expand the window with j:
+If the window becomes too big (j - i + 1 > w), shrink from the left (i++) and update counts.
+If the new element would exceed the allowed frequency m, discard it (set to 0, increment ans, but don’t actually add it to the map).
+Otherwise, add it into the map.
+At the end, ans = number of discarded elements.
+
+Complexity
+Time complexity:
+Each element is visited at most twice (once when j moves, once when i moves).
+→ O(n)
+
+Space complexity:
+The hashmap stores counts of elements in the current window (at most w elements).
+→ O(w)
+
+Code
+class Solution {
+public:
+    int minArrivalsToDiscard(vector<int>& arr, int w, int m) {
+        int i=0;
+        int n = arr.size();
+        int ans = 0;
+        unordered_map<int,int> mp;
+        for(int j=0;j<n;j++) {
+            while(j-i+1>w) {
+                mp[arr[i]]--;
+                i++;
+            }
+
+            if(j-i+1<=w && mp[arr[j]]+1 > m) {
+                arr[j]=0;
+                ans++;
+                continue;
+            }
+            
+            mp[arr[j]]++;
+        }
+        return ans;
+    }
+};
