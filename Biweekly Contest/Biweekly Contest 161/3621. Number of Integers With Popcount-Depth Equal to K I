@@ -1,0 +1,56 @@
+# Intuition
+<!-- Describe your first thoughts on how to solve this problem. -->
+For all $x \in [1,n]$, we have $depth(x)=1+depth(px)$, where $px=popcount(x)$.
+Therefore the problem reduces to:
+1. Find all integers $px$ such that $depth(px) == k-1$.
+2. For each such $px$, count how many $x \in [1,n]$ have exactly $px$ 1-bits.
+3. Sum those counts.
+
+# Approach
+<!-- Describe your approach to solving the problem. -->
+1. Let `m = n.bit_length()` and we scan the bits of n from the most significant (index m-1) to the least significant (index 0).
+2. At position `i`:
+    - If the bit in n is 1, then we have two choices for constructing x:
+        - Put 0 in this position. Then we must place all remaining `px` 1-bits among the `i` lower positions. This contributes `comb(i, px)` possibilities.
+        - Put 1 in this position (to match n), then continue scanning with `px-1` ones left to place.
+
+    - If the bit in n is 0, we cannot put 1 here unless a higher bit was already smaller, so we simply continue.
+
+3. After processing all bits, if exactly px ones have been placed, then n itself is included as a valid number, so we add 1.
+
+# Complexity
+- Time complexity:
+    - Computing depth(x) is $O(1)$ since the chain length is at most 5.
+    - For each valid `px`, counting requires $O(m) = O(\log n)$ work.
+    - Overall complexity: $O(\log^2 n)$.
+
+- Space complexity: $O(1)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def popcountDepth(self, n: int, k: int) -> int:
+        if k == 0: return 1
+        if k == 1: return n.bit_length() - 1
+        
+        def depth(x):
+            if x == 1: return 0
+            return 1 + depth(x.bit_count())
+
+        def count(px):
+            cnt = 0
+            for i in range(m-1, -1, -1):
+                if (n >> i) & 1:
+                    cnt += comb(i, px)
+                    px -= 1
+                    if px < 0: return cnt
+            return cnt if px else cnt + 1
+
+        res = 0
+        m = n.bit_length()
+        for px in range(1, m+1): 
+            if depth(px) == k - 1:
+                res += count(px)
+        return res
+```
