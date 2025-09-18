@@ -1,0 +1,77 @@
+# Intuition
+We need to design a task manager that can efficiently handle tasks with operations: add, edit, remove, and execute the top priority task.  
+The key requirements are:
+- Always be able to retrieve the task with the **highest priority**, and if there is a tie, the **highest taskId**.  
+- Support updates (`edit`) and removals (`rmv`) efficiently.  
+- Tasks must be removed once executed.  
+
+This suggests using a **priority queue (heap)** for ordering, combined with a **hash map** for fast lookups and lazy deletion.
+
+---
+
+# Approach
+- Use a **max-heap** (simulated with Python's `heapq` by pushing negative values). Each entry is stored as `(-priority, -taskId)`, ensuring that:
+  - Higher priority comes first.
+  - If priorities are equal, larger taskId comes first.
+- Maintain a dictionary `info` mapping `taskId -> (userId, priority)` for:
+  - Fast access to a task’s current priority.
+  - Detecting if a heap entry is stale (outdated due to `edit` or `rmv`).  
+
+### Operations:
+1. **Initialization**: Insert all given tasks into both the map and heap.  
+2. **add**: Push the task into both structures.  
+3. **edit**: Update the map and push a new `(priority, taskId)` entry into the heap. The old heap entry becomes stale.  
+4. **rmv**: Remove the task from the map. Old heap entries remain but will be ignored later.  
+5. **execTop**: Continuously pop from the heap until we find a valid (non-stale) entry:
+   - If valid, remove it from the map and return its `userId`.
+   - If no tasks remain, return `-1`.
+
+This lazy deletion ensures we don’t need to remove outdated entries directly from the heap, which would be inefficient.
+
+---
+
+# Complexity
+- **Time complexity**:  
+  - `add`, `edit`, `rmv`: \(O(\log n)\) for heap push, \(O(1)\) for dictionary operations.  
+  - `execTop`: Amortized \(O(\log n)\), since each heap entry is pushed and popped at most once.  
+- **Space complexity**: \(O(n)\), storing tasks in both heap and dictionary.
+
+---
+
+# Code
+```python3 []
+import heapq
+
+class TaskManager:
+    def __init__(self, tasks):
+        self.pq = []  # max-heap via (-priority, -taskId)
+        self.info = {}  # taskId -> (userId, priority)
+        for userId, taskId, pri in tasks:
+            self.info[taskId] = (userId, pri)
+            heapq.heappush(self.pq, (-pri, -taskId))
+
+    def add(self, userId, taskId, priority):
+        self.info[taskId] = (userId, priority)
+        heapq.heappush(self.pq, (-priority, -taskId))
+
+    def edit(self, taskId, newPriority):
+        userId, _ = self.info[taskId]
+        self.info[taskId] = (userId, newPriority)
+        heapq.heappush(self.pq, (-newPriority, -taskId))
+
+    def rmv(self, taskId):
+        if taskId in self.info:
+            del self.info[taskId]
+
+    def execTop(self):
+        while self.pq:
+            neg_p, neg_id = heapq.heappop(self.pq)
+            p, taskId = -neg_p, -neg_id
+            if taskId not in self.info:
+                continue  # stale entry
+            userId, cur_p = self.info[taskId]
+            if cur_p != p:
+                continue  # stale entry
+            del self.info[taskId]
+            return userId
+        return -1
