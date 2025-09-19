@@ -1,0 +1,35 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+Store cell values in a dictionary:
+- `setCell`: assign a value to a cell.
+- `resetCell`: delete a cell if it exists.
+- `getValue`: parse a formula of the form "=X+Y", where X and Y can be integers or cell names, then return their sum.
+
+
+# Complexity
+- Time complexity: $O(1)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(n)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Spreadsheet:
+
+    def __init__(self, rows: int):
+        self.sheet = {}
+
+    def setCell(self, cell: str, value: int) -> None:
+        self.sheet[cell] = value
+
+    def resetCell(self, cell: str) -> None:
+        if cell in self.sheet:
+            del self.sheet[cell]
+
+    def getValue(self, formula: str) -> int:
+        x, y = formula[1:].split('+')
+        vx = self.sheet.get(x, 0) if x[0].isalpha() else int(x)
+        vy = self.sheet.get(y, 0) if y[0].isalpha() else int(y)
+        return vx + vy
+```
