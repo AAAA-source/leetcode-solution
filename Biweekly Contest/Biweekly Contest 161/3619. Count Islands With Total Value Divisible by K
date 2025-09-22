@@ -1,0 +1,70 @@
+# Intuition
+This problem is a variation of the classic "Number of Islands".  
+Instead of only counting islands, each island has a **value** defined as the sum of its cells (where land cells are positive integers).  
+We need to count how many islands have a total value divisible by `k`.  
+So the task reduces to:  
+1. Traverse the grid.  
+2. Use DFS/BFS to explore each island, compute its sum.  
+3. Check divisibility by `k`.  
+
+---
+
+# Approach
+1. Initialize a `visited` matrix to mark explored cells.  
+2. Iterate through the grid. Whenever we encounter a positive cell not visited:  
+   - Launch a DFS (or BFS).  
+   - Collect all connected land cells, summing their values.  
+   - Mark them visited.  
+3. After finishing the island traversal, check if `total % k == 0`. If yes, increment the result.  
+4. Return the count after the full traversal.  
+
+This ensures each cell is processed exactly once, making the algorithm efficient.  
+
+---
+
+# Complexity
+- **Time complexity**:  
+  Each cell is visited at most once in the DFS. Thus, the overall complexity is  
+  \[
+  O(m \times n)
+  \]  
+  where `m` and `n` are grid dimensions.  
+
+- **Space complexity**:  
+  - `O(m \times n)` for the `visited` matrix.  
+  - DFS stack can go as deep as `O(m \times n)` in the worst case (all land).  
+
+---
+
+# Code
+```python3 []
+from typing import List
+
+class Solution:
+    def countIslands(self, grid: List[List[int]], k: int) -> int:
+        m, n = len(grid), len(grid[0])
+        visited = [[False] * n for _ in range(m)]
+
+        def dfs(i, j):
+            stack = [(i, j)]
+            total = 0
+            while stack:
+                x, y = stack.pop()
+                if not (0 <= x < m and 0 <= y < n):
+                    continue
+                if visited[x][y] or grid[x][y] == 0:
+                    continue
+                visited[x][y] = True
+                total += grid[x][y]
+                for dx, dy in [(1,0), (-1,0), (0,1), (0,-1)]:
+                    stack.append((x+dx, y+dy))
+            return total
+
+        count = 0
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] > 0 and not visited[i][j]:
+                    total = dfs(i, j)
+                    if total % k == 0:
+                        count += 1
+        return count
