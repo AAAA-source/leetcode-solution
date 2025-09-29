@@ -1,0 +1,43 @@
+# Intuition
+The problem asks for the minimum path sum from the top to the bottom of a triangle.  
+At each step, you can only move to adjacent numbers in the next row.  
+This structure suggests a dynamic programming solution, since the optimal path to a cell depends only on the optimal paths of cells directly below it.  
+
+---
+
+# Approach
+We can solve this using **bottom-up dynamic programming**:  
+1. Start from the last row, where the minimum path sum at each position is simply the value itself.  
+2. Move upward row by row. For each element `triangle[r][c]`, the minimum path sum is its value plus the minimum of the two possible positions in the row below (`dp[c]` and `dp[c+1]`).  
+3. Use a one-dimensional `dp` array to store the current best values from the row below and update it in place.  
+4. After processing all rows, `dp[0]` will contain the minimum path sum from the top.  
+
+---
+
+# Complexity
+- **Time complexity**:  
+  Each element of the triangle is visited once, so the time complexity is  
+  \[
+  O(n^2)
+  \]  
+  where `n` is the number of rows.  
+
+- **Space complexity**:  
+  We only use a one-dimensional array of size equal to the bottom row, so the space complexity is  
+  \[
+  O(n)
+  \]  
+
+---
+
+# Code
+```python3 []
+from typing import List
+
+class Solution:
+    def minimumTotal(self, triangle: List[List[int]]) -> int:
+        dp = triangle[-1][:]
+        for r in range(len(triangle) - 2, -1, -1):
+            for c in range(len(triangle[r])):
+                dp[c] = triangle[r][c] + min(dp[c], dp[c+1])
+        return dp[0]
