@@ -1,0 +1,58 @@
+# Intuition
+Each exchange consumes some empty bottles and returns **one** full bottle, after which the required cost (`numExchange`) **increases by 1**.  
+If we first drink all initially full bottles, we get `E0 = numBottles` empties.  
+Suppose we can perform `t` exchanges in total. The i-th exchange costs
+`(numExchange + i - 1)` empties, but we immediately drink the new bottle and get
+**+1** empty back, so the **net** empty-bottle decrease per exchange is
+`(numExchange + i - 1) - 1 = numExchange + i - 2`.  
+Summing over `t` exchanges yields the condition:
+\[
+E_0 \;\ge\; \sum_{i=0}^{t-1} \big( (numExchange+i) - 2 \big)
+= t\,(numExchange-1) + \frac{t(t-1)}{2}.
+\]
+Find the largest integer `t` satisfying this inequality; the answer is
+`numBottles + t` (initial drinks + exchanges).
+
+# Approach
+Derive a quadratic inequality in `t` and solve it in **O(1)**:
+\[
+\frac{t^2 - t}{2} + t\,(numExchange-1) \;\le\; E_0
+\;\Longleftrightarrow\;
+t^2 + (2\,numExchange - 3)\,t - 2\,E_0 \;\le\; 0.
+\]
+Let \(a=1\), \(b=2\,numExchange-3\), \(c=-2E_0\). The valid `t` are between the two roots.  
+We take the **largest integer** `t` not exceeding the positive root.  
+To avoid floating-point precision pitfalls, use `math.isqrt` on the discriminant.
+
+Edge case: if `E0 < numExchange`, no exchange is possible; we just drink the initial bottles.
+
+# Complexity
+- **Time complexity:** \(O(1)\) — closed-form computation.
+- **Space complexity:** \(O(1)\).
+
+# Code
+```python3 []
+import math
+
+class Solution:
+    def maxBottlesDrunk(self, numBottles: int, numExchange: int) -> int:
+        E0 = numBottles
+        c0 = numExchange
+
+        # If we can't afford the first exchange, just drink the initial bottles.
+        if E0 < c0:
+            return E0
+
+        # Solve t^2 + (2c0 - 3)t - 2E0 <= 0  for the largest integer t.
+        a = 1
+        b = 2 * c0 - 3
+        c = -2 * E0
+        # Discriminant: b^2 - 4ac
+        D = b * b - 4 * a * c
+        r = math.isqrt(D)  # floor(sqrt(D)) — safe and exact for integers
+        # Largest integer t not exceeding the positive root:
+        t = (-b + r) // (2 * a)
+        if t < 0:
+            t = 0
+
+        return E0 + t
