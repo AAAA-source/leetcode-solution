@@ -1,0 +1,23 @@
+# Approach
+<!-- Describe your approach to solving the problem. -->
+The idea is to to track the best possible energy value that can be accumulated starting from different modulo classes of indices (i.e., $i \% k$).
+
+We initialize a DP array of size $k$ where $dp[r]$ keeps the maximum energy sum for indices where $i \% k == r$. We iterate through the list and at each index i, we update $dp[i \% k]$ by adding the current energy value $e$ to the previously stored value, but only if the previous value is positive. At the end, the maximum value in the dp array is the answer.
+
+# Complexity
+- Time complexity: $O(n)$
+<!-- Add your time complexity here, e.g. $$O(n)$$ -->
+
+- Space complexity: $O(k)$
+<!-- Add your space complexity here, e.g. $$O(n)$$ -->
+
+# Code
+```python3 []
+class Solution:
+    def maximumEnergy(self, energy: List[int], k: int) -> int:
+        dp = [0] * k
+        for i, e in enumerate(energy):
+            dp[i % k] = max(0, dp[i % k]) + e
+        
+        return max(dp)
+```
