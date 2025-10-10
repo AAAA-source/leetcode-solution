@@ -1,0 +1,51 @@
+# Intuition
+
+對固定的 `spell = s`，想要 `s * p ≥ success`，等價於找出所有「足夠大的」`potion`。若把 `potions` 升冪排序，對越大的 `s`，可匹配的藥水只會“變多不變少”。因此可以用一個從右往左的指標 `j` 只走一次，配合把 `spells` 也升冪處理，就能在一次線性掃描中完成配對數量統計。
+
+# Approach
+
+1. 先將 `potions` 升冪排序。
+2. 為了回填原順序，把 `spells` 轉成 `(值, 原索引)`，並以值升冪排序。
+3. 設定右指標 `j = m - 1` 指向 `potions` 的最後一個（最大）。
+4. 依序（由小到大）遍歷每個 `s`：
+
+   * 當 `j >= 0` 且 `s * potions[j] ≥ success` 時，代表最右邊的這個 `potions[j]` 對此 `s` 成功，且對之後更大的 `s` 也一定成功，因此把 `j` 往左移，擴大“成功區間”。
+   * 迴圈停止時，右端成功區間的大小就是 `m - j - 1`，回填到原索引 `i` 的答案中。
+5. 由於 `j` 只會往左移，每個 `potion` 最多被檢查一次，整體掃描是線性的。
+
+# Complexity
+
+* Time complexity:
+  先排序 `potions`：`O(m log m)`；排序 `spells`（含索引）：`O(n log n)`；雙指標線性掃描：`O(n + m)`。
+  **總計** `O(m log m + n log n + n + m)`，通常寫作 `O((n + m) log(n + m))`。
+* Space complexity:
+  需要 `pairs` 以及 `(spell, index)` 的暫存，為 `O(n)`（不含輸出計）。
+
+# Code
+
+```python3 []
+from typing import List
+
+class Solution:
+    def successfulPairs(self, spells: List[int], potions: List[int], success: int) -> List[int]:
+        m = len(potions)
+        potions.sort()
+        pairs = [0] * len(spells)
+
+        # (spell_value, original_index) by ascending spell_value
+        spells_with_idx = sorted((s, i) for i, s in enumerate(spells))
+
+        j = m - 1  # rightmost pointer on potions
+        for s, i in spells_with_idx:
+            # shrink from the right while current potion works with s
+            while j >= 0 and s * potions[j] >= success:
+                j -= 1
+            # number of successful potions is everything to the right of j
+            pairs[i] = m - j - 1
+        return pairs
+```
+
+**備註**
+
+* 這個解法避免了對每個 `spell` 都做二分搜尋，指標 `j` 全程只遞減一次；在某些資料分布下比「排序 + 二分」更快。
+* 在 C++/Java 記得用 64-bit 來做乘法比較（`long long` / `long`），避免溢位。
